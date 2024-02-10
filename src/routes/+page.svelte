@@ -2,6 +2,12 @@
 	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 	import { onMount } from 'svelte';
 
+	let gesture = '';
+	let startX = 0;
+	let alreadyTracked = false;
+	let swipeRight = 0;
+	let swipeLeft = 0;
+
 	onMount(() => {
 		const cv = async () => {
 			let gestureRecognizer: GestureRecognizer;
@@ -21,7 +27,10 @@
 						'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task'
 				},
 				numHands: 2,
-				runningMode: 'VIDEO'
+				runningMode: 'VIDEO',
+				minHandDetectionConfidence: 0.3,
+				minHandPresenceConfidence: 0.3,
+				minTrackingConfidence: 0.3
 			});
 
 			const video = document.getElementById('webcam') as HTMLVideoElement;
@@ -79,7 +88,21 @@
 				canvasElement.style.width = videoWidth;
 				webcamElement!.style.width = videoWidth;
 
-				if (results.landmarks) {
+				if (results.landmarks.length > 0) {
+					if (results.landmarks[0][8] && !alreadyTracked) {
+						startX = results.landmarks[0][8].x;
+						alreadyTracked = true;
+					}
+
+					if (startX - results.landmarks[0][8].x < -0.3) {
+						swipeLeft = 1;
+						alreadyTracked = false;
+					}
+					if (startX - results.landmarks[0][8].x > 0.3) {
+						swipeRight = 1;
+						alreadyTracked = false;
+					}
+
 					for (const landmarks of results.landmarks) {
 						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
 							color: '#00FF00',
@@ -95,8 +118,8 @@
 				if (results.gestures.length > 0) {
 					gestureOutput!.style.display = 'block';
 					gestureOutput!.style.width = videoWidth;
-					console.log(results);
 					const categoryName = results.gestures[0][0].categoryName;
+					gesture = categoryName;
 					const categoryScore = parseFloat(String(results.gestures[0][0].score * 100)).toFixed(2);
 					const handedness = results.handednesses[0][0].displayName;
 					gestureOutput!.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
@@ -116,6 +139,14 @@
 <button id="webcamButton">
 	<span>ENABLE WEBCAM</span>
 </button>
-<video id="webcam" autoplay playsinline></video>
-<canvas class="output_canvas" id="output_canvas" width="1280" height="720"></canvas>
+<video id="webcam" autoplay playsinline class=""></video>
+<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
 <p id="gesture_output" class="output"></p>
+<p>swipe right: {swipeRight}</p>
+<p>swipe left: {swipeLeft}</p>
+
+<style>
+	#webcam {
+		transform: scaleX(-1);
+	}
+</style>
