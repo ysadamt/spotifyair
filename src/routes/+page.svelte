@@ -1,2 +1,121 @@
-<h1 class="text-2xl">Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		const cv = async () => {
+			let gestureRecognizer: GestureRecognizer;
+			let runningMode = 'IMAGE';
+			let enableWebcamButton: any;
+			let webcamRunning: Boolean = false;
+			const videoHeight = '360px';
+			const videoWidth = '480px';
+
+			const vision = await FilesetResolver.forVisionTasks(
+				// path/to/wasm/root
+				'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
+			);
+			gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+				baseOptions: {
+					modelAssetPath:
+						'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task'
+				},
+				numHands: 2,
+				runningMode: 'VIDEO'
+			});
+
+			const video = document.getElementById('webcam') as HTMLVideoElement;
+			const canvasElement = document.getElementById('output_canvas') as HTMLCanvasElement;
+			const canvasCtx = canvasElement!.getContext('2d');
+			const gestureOutput = document.getElementById('gesture_output');
+
+			enableWebcamButton = document.getElementById('webcamButton');
+			enableWebcamButton.addEventListener('click', enableCam);
+
+			function enableCam(event: any) {
+				if (!gestureRecognizer) {
+					alert('Please wait for gestureRecognizer to load');
+					return;
+				}
+
+				if (webcamRunning === true) {
+					webcamRunning = false;
+					enableWebcamButton.innerText = 'ENABLE PREDICTIONS';
+				} else {
+					webcamRunning = true;
+					enableWebcamButton.innerText = 'DISABLE PREDICTIONS';
+				}
+
+				const constraints = {
+					video: true
+				};
+
+				navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+					video!.srcObject = stream;
+					video!.addEventListener('loadeddata', predictWebcam);
+				});
+			}
+
+			let lastVideoTime = -1;
+			let results: any = undefined;
+			async function predictWebcam() {
+				const webcamElement = document.getElementById('webcam');
+				if (runningMode === 'IMAGE') {
+					runningMode = 'VIDEO';
+					await gestureRecognizer.setOptions({ runningMode: 'VIDEO' });
+				}
+				let nowInMs = Date.now();
+				if (video.currentTime !== lastVideoTime) {
+					lastVideoTime = video.currentTime;
+					results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+				}
+
+				canvasCtx!.save();
+				canvasCtx!.clearRect(0, 0, canvasElement.width, canvasElement.height);
+				const drawingUtils = new DrawingUtils(canvasCtx as CanvasRenderingContext2D);
+
+				canvasElement.style.height = videoHeight;
+				webcamElement!.style.height = videoHeight;
+				canvasElement.style.width = videoWidth;
+				webcamElement!.style.width = videoWidth;
+
+				if (results.landmarks) {
+					for (const landmarks of results.landmarks) {
+						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+							color: '#00FF00',
+							lineWidth: 5
+						});
+						drawingUtils.drawLandmarks(landmarks, {
+							color: '#FF0000',
+							lineWidth: 2
+						});
+					}
+				}
+				canvasCtx!.restore();
+				if (results.gestures.length > 0) {
+					gestureOutput!.style.display = 'block';
+					gestureOutput!.style.width = videoWidth;
+					console.log(results);
+					const categoryName = results.gestures[0][0].categoryName;
+					const categoryScore = parseFloat(String(results.gestures[0][0].score * 100)).toFixed(2);
+					const handedness = results.handednesses[0][0].displayName;
+					gestureOutput!.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
+				} else {
+					gestureOutput!.style.display = 'none';
+				}
+				if (webcamRunning === true) {
+					window.requestAnimationFrame(predictWebcam);
+				}
+			}
+		};
+
+		cv();
+	});
+</script>
+
+<button id="webcamButton">
+	<span>ENABLE WEBCAM</span>
+</button>
+<video id="webcam" autoplay playsinline></video>
+<canvas class="output_canvas" id="output_canvas" width="1280" height="720"></canvas>
+<p id="gesture_output" class="output"></p>
