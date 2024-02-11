@@ -34,11 +34,10 @@
 			let runningMode = 'IMAGE';
 			let enableWebcamButton: any;
 			let webcamRunning: Boolean = false;
-			const videoHeight = '360px';
-			const videoWidth = '480px';
+			const videoHeight = '240px';
+			const videoWidth = '360px';
 
 			const vision = await FilesetResolver.forVisionTasks(
-				// path/to/wasm/root
 				'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
 			);
 			gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
@@ -54,7 +53,7 @@
 			});
 
 			const video = document.getElementById('webcam') as HTMLVideoElement;
-			const canvasElement = document.getElementById('output_canvas') as HTMLCanvasElement;
+			const canvasElement = document.getElementById('output-canvas') as HTMLCanvasElement;
 			const canvasCtx = canvasElement!.getContext('2d');
 			const gestureOutput = document.getElementById('gesture_output');
 
@@ -163,23 +162,49 @@
 	});
 </script>
 
-<div class="flex flex-col text-white">
-	<button
-		id="webcamButton"
-		class="flex text-black w-full bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
-	>
-		<span>Enable Gestures</span>
-	</button>
-	<video id="webcam" autoplay playsinline class=""></video>
-	<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
-	<p id="gesture_output" class="output"></p>
-	<p>swipe right: {swipeRight}</p>
-	<p>swipe left: {swipeLeft}</p>
-	<p>pause: {pause}</p>
+<div class="flex flex-row text-white w-full h-full">
+	<div class="flex flex-col items-center justify-center w-1/2">
+		<button
+			id="webcamButton"
+			class="flex text-black w-fit bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
+		>
+			<span>Enable Gestures</span>
+		</button>
+		<p>swipe right: {swipeRight}</p>
+		<p>swipe left: {swipeLeft}</p>
+		<p>pause: {pause}</p>
+		<p id="gesture_output" class="output hidden"></p>
+	</div>
+	<div class="flex flex-col items-center justify-center w-1/2 gap-8">
+		<div id="video-container" class="flex bg-[#b3b3b3] w-[360px] h-[280px] items-center rounded-md">
+			<video id="webcam" autoplay playsinline class="rounded-md"></video>
+		</div>
+		<div id="cv-container" class="flex bg-[#b3b3b3] w-[360px] h-[280px] items-center rounded-md">
+			<canvas class="output-canvas" id="output-canvas" width="360" height="240"></canvas>
+		</div>
+	</div>
 </div>
 
 <style>
 	#webcam {
 		transform: scaleX(-1);
+	}
+
+	#output-canvas {
+		transform: scaleX(-1);
+	}
+
+	#video-container {
+		background-image: url('/video.svg');
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 20%;
+	}
+
+	#cv-container {
+		background-image: url('/line.svg');
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 20%;
 	}
 </style>

@@ -11,7 +11,7 @@
 	/>
 </svelte:head>
 
-<main class="h-dvh flex flex-col items-center justify-center font-jakarta gap-10">
+<main class="h-dvh font-jakarta">
 	<slot />
 </main>
 
