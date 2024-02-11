@@ -1,10 +1,11 @@
 <script>
 	// Importing environment variables
 	const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-	const REDIRECT_URI = 'http://localhost:5173/media_pipe/';
+	const REDIRECT_URI = 'http://localhost:5173/track/';
 	const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 	const RESPONSE_TYPE = 'token';
-	const SCOPE = 'user-modify-playback-state user-library-read user-library-modify user-read-recently-played user-read-currently-playing';
+	const SCOPE =
+		'user-modify-playback-state user-library-read user-library-modify user-read-recently-played user-read-currently-playing';
 
 	// let userSignedIn = false;
 	const toggleUserSignedIn = () => {

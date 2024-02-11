@@ -14,20 +14,19 @@
 	let rightCalled = false;
 	let pauseCalled = false;
 	let playCalled = false;
-	let closedFistCalled = false
-
+	let closedFistCalled = false;
 
 	onMount(() => {
 		const hash = window.location.hash;
-		const token = window.localStorage.getItem('token');
+		let token = window.localStorage.getItem('token');
 		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
 
 		if (!userSignedIn) {
 			goto('/');
 		}
 
-		if (!token && hash) {
-			const token = hash.substring(1).split('&')[0].split('=')[1];
+		if (token == null && hash) {
+			token = hash.substring(1).split('&')[0].split('=')[1];
 			window.localStorage.setItem('token', token);
 		}
 
@@ -124,23 +123,19 @@
 						swipeLeft += 1;
 						handleSwipeLeft();
 						leftCalled = true;
-					}
-					else if (startX  < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
-						swipeRight += 1
+					} else if (startX < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
+						swipeRight += 1;
 						handleSwipeRight();
 						rightCalled = true;
-					}
-					else if(gesture === 'Open_Palm' && !pauseCalled){
+					} else if (gesture === 'Open_Palm' && !pauseCalled) {
 						console.log('should be pausing');
 						pauseCalled = true;
 						handlePause();
-					}
-					else if(gesture === 'Victory' && !playCalled){
+					} else if (gesture === 'Victory' && !playCalled) {
 						console.log('should be playing');
 						playCalled = true;
 						handlePlay();
-					}
-					else if(gesture === 'Closed_Fist' && !closedFistCalled){
+					} else if (gesture === 'Closed_Fist' && !closedFistCalled) {
 						console.log('should be liking');
 						closedFistCalled = true;
 						handleLiked();
@@ -190,7 +185,6 @@
 	};
 
 	const handleSwipeRight = async () => {
-		
 		console.log('global_token', global_token);
 		if (!global_token) {
 			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
@@ -254,7 +248,7 @@
 		console.log('global_token', global_token);
 		if (!global_token) {
 			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
-			return
+			return;
 		}
 		try {
 			await axios({
@@ -262,24 +256,22 @@
 				url: 'https://api.spotify.com/v1/me/player/play',
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
-		}
-		catch (error) {
+		} catch (error) {
 			console.log(error);
 			alert(
 				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
 			);
 		}
-		
-	}
+	};
 
 	const get_id_current_song = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
 			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
-			return
+			return;
 		}
 		try {
-			 const res = await axios({
+			const res = await axios({
 				method: 'get',
 				url: 'https://api.spotify.com/v1/me/player/currently-playing',
 				headers: { Authorization: 'Bearer ' + global_token }
@@ -287,22 +279,19 @@
 			let id = res.data.item.id;
 			console.log('liked song id: ', id);
 			return id;
-			
-		}
-		catch (error) {
+		} catch (error) {
 			console.log(error);
 			alert(
 				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
 			);
 		}
-	
-	}
+	};
 
 	const handleLiked = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
 			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
-			return
+			return;
 		}
 		try {
 			const id = await get_id_current_song();
@@ -311,18 +300,13 @@
 				url: `https://api.spotify.com/v1/me/tracks?ids=${id}`,
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
-		}
-		catch (error) {
+		} catch (error) {
 			console.log(error);
 			alert(
 				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
 			);
 		}
-	}
-
-
-
-
+	};
 </script>
 
 <button id="webcamButton">
