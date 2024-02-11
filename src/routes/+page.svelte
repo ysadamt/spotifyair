@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
+	import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 	import { onMount } from 'svelte';
 
 	let gesture = '';
@@ -7,6 +7,7 @@
 	let alreadyTracked = false;
 	let swipeRight = 0;
 	let swipeLeft = 0;
+	let pause = false;
 
 	onMount(() => {
 		const cv = async () => {
@@ -34,8 +35,8 @@
 			});
 
 			const video = document.getElementById('webcam') as HTMLVideoElement;
-			const canvasElement = document.getElementById('output_canvas') as HTMLCanvasElement;
-			const canvasCtx = canvasElement!.getContext('2d');
+			// const canvasElement = document.getElementById('output_canvas') as HTMLCanvasElement;
+			// const canvasCtx = canvasElement!.getContext('2d');
 			const gestureOutput = document.getElementById('gesture_output');
 
 			enableWebcamButton = document.getElementById('webcamButton');
@@ -79,21 +80,21 @@
 					results = gestureRecognizer.recognizeForVideo(video, nowInMs);
 				}
 
-				canvasCtx!.save();
-				canvasCtx!.clearRect(0, 0, canvasElement.width, canvasElement.height);
-				const drawingUtils = new DrawingUtils(canvasCtx as CanvasRenderingContext2D);
+				// canvasCtx!.save();
+				// canvasCtx!.clearRect(0, 0, canvasElement.width, canvasElement.height);
+				// const drawingUtils = new DrawingUtils(canvasCtx as CanvasRenderingContext2D);
 
-				canvasElement.style.height = videoHeight;
+				// canvasElement.style.height = videoHeight;
+				// canvasElement.style.width = videoWidth;
 				webcamElement!.style.height = videoHeight;
-				canvasElement.style.width = videoWidth;
 				webcamElement!.style.width = videoWidth;
 
 				if (results.landmarks.length > 0) {
+					// alreadyTracked = false;
 					if (results.landmarks[0][8] && !alreadyTracked) {
 						startX = results.landmarks[0][8].x;
 						alreadyTracked = true;
 					}
-
 					if (startX - results.landmarks[0][8].x < -0.3) {
 						swipeLeft = 1;
 						alreadyTracked = false;
@@ -103,18 +104,25 @@
 						alreadyTracked = false;
 					}
 
-					for (const landmarks of results.landmarks) {
-						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
-							color: '#00FF00',
-							lineWidth: 5
-						});
-						drawingUtils.drawLandmarks(landmarks, {
-							color: '#FF0000',
-							lineWidth: 2
-						});
+					if (gesture === 'Open_Palm') {
+						pause = true;
 					}
+					if (gesture === 'Victory') {
+						pause = false;
+					}
+
+					// for (const landmarks of results.landmarks) {
+					// 	drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+					// 		color: '#00FF00',
+					// 		lineWidth: 5
+					// 	});
+					// 	drawingUtils.drawLandmarks(landmarks, {
+					// 		color: '#FF0000',
+					// 		lineWidth: 2
+					// 	});
+					// }
 				}
-				canvasCtx!.restore();
+				// canvasCtx!.restore();
 				if (results.gestures.length > 0) {
 					gestureOutput!.style.display = 'block';
 					gestureOutput!.style.width = videoWidth;
@@ -140,10 +148,11 @@
 	<span>ENABLE WEBCAM</span>
 </button>
 <video id="webcam" autoplay playsinline class=""></video>
-<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
+<!-- <canvas class="output_canvas" id="output_canvas" width="1280" height="720"></canvas> -->
 <p id="gesture_output" class="output"></p>
 <p>swipe right: {swipeRight}</p>
 <p>swipe left: {swipeLeft}</p>
+<p>pause: {pause}</p>
 
 <style>
 	#webcam {
