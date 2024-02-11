@@ -330,50 +330,54 @@
 	};
 </script>
 
-<div class="flex flex-col items-center justify-start text-white w-full h-full gap-16 pt-32">
-	<div class="flex flex-col items-center justify-center w-1/2 gap-8">
+<div class="flex flex-col items-center justify-center text-white w-full h-full gap-16">
+	<div class={`${mediapipeLoading ? 'hidden' : 'flex flex-col items-center justify-center gap-8'}`}>
 		<div id="video-container" class="relative bg-[#b3b3b3] w-[360px] h-[280px] rounded-md">
 			<video id="webcam" autoplay playsinline class="absolute top-5"> </video>
 			<canvas class="output-canvas absolute" id="output-canvas" width="360" height="240"> </canvas>
 		</div>
-	</div>
-	<table class=" text-black bg-white rounded-lg shadow-xl">
-		<tr>
-			<th align="left" scope="row">Skip Forward</th>
-			<td>Gig Em' to the right👍👉</td>
-		</tr>
-		<tr>
-			<th align="left" scope="row">Go Backward</th>
-			<td>Gig Em' to the left👍👈</td>
-		</tr>
-		<tr>
-			<th align="left" scope="row">Pause Song</th>
-			<td>Open hand✋</td>
-		</tr>
-		<tr>
-			<th align="left" scope="row">Play Song</th>
-			<td>Peace sign✌️</td>
-		</tr>
-		<tr>
-			<th align="left" scope="row" class="pr-6">Add to liked songs</th>
-			<td>Close hand✊</td>
-		</tr>
-	</table>
-	<div
-		class={`flex flex-col items-center justify-center w-full ${mediapipeLoading ? 'block' : 'hidden'}`}
-	>
-		<IconLoader2 class="animate-spin w-16 h-16" />
-	</div>
-	<div class={`${mediapipeLoading ? 'hidden' : 'flex flex-col items-center justify-center gap-8'}`}>
 		<button
 			id="webcamButton"
 			class="flex text-black w-fit bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
 		>
 			<span>Enable Gestures</span>
 		</button>
-		<p>{currentGesture}</p>
+		<p class="font-bold text-[#1db954]">{currentGesture}</p>
 		<div class="hidden">
 			<p id="gesture_output" class="output"></p>
+		</div>
+	</div>
+	<div
+		class={`flex flex-col items-center justify-center w-full ${mediapipeLoading ? 'block' : 'hidden'}`}
+	>
+		<IconLoader2 class="animate-spin w-16 h-16" />
+	</div>
+	<div class="flex flex-col items-center justify-center gap-8">
+		<div class="flex flex-col items-center gap-4 -mt-8">
+			<!-- <h2 class="font-bold text-2xl">Gesture	s</h2> -->
+
+			<table class="text-white rounded-lg shadow-xl">
+				<tr>
+					<th align="left" scope="row">Skip Forward</th>
+					<td align="right">Gig Em' to the right 👍 👉</td>
+				</tr>
+				<tr>
+					<th align="left" scope="row">Go Backward</th>
+					<td align="right">Gig Em' to the left 👍 👈</td>
+				</tr>
+				<tr>
+					<th align="left" scope="row">Pause Song</th>
+					<td align="right">Open hand ✋</td>
+				</tr>
+				<tr>
+					<th align="left" scope="row">Play Song</th>
+					<td align="right">Peace sign ✌️</td>
+				</tr>
+				<tr>
+					<th align="left" scope="row" class="pr-6">Add to liked songs</th>
+					<td align="right">Close hand ✊</td>
+				</tr>
+			</table>
 		</div>
 	</div>
 </div>
@@ -399,5 +403,16 @@
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size: 20%;
+	}
+
+	th {
+		padding-top: 10px;
+		padding-bottom: 10px;
+		padding-right: 12px;
+	}
+
+	td {
+		padding: 10px;
+		font-style: italic;
 	}
 </style>
