@@ -1,152 +1,36 @@
-<script lang="ts">
-	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
-	import { onMount } from 'svelte';
+<script>
+	// Importing environment variables
+	const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+	const REDIRECT_URI = 'http://localhost:5173/media_pipe/';
+	const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+	const RESPONSE_TYPE = 'token';
+	const SCOPE = 'user-modify-playback-state user-library-read user-read-recently-played';
 
-	let gesture = '';
-	let startX = 0;
-	let alreadyTracked = false;
-	let swipeRight = 0;
-	let swipeLeft = 0;
-
-	onMount(() => {
-		const cv = async () => {
-			let gestureRecognizer: GestureRecognizer;
-			let runningMode = 'IMAGE';
-			let enableWebcamButton: any;
-			let webcamRunning: Boolean = false;
-			const videoHeight = '360px';
-			const videoWidth = '480px';
-
-			const vision = await FilesetResolver.forVisionTasks(
-				// path/to/wasm/root
-				'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
-			);
-			gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-				baseOptions: {
-					modelAssetPath:
-						'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task'
-				},
-				numHands: 2,
-				runningMode: 'VIDEO',
-				minHandDetectionConfidence: 0.3,
-				minHandPresenceConfidence: 0.3,
-				minTrackingConfidence: 0.3
-			});
-
-			const video = document.getElementById('webcam') as HTMLVideoElement;
-			const canvasElement = document.getElementById('output_canvas') as HTMLCanvasElement;
-			const canvasCtx = canvasElement!.getContext('2d');
-			const gestureOutput = document.getElementById('gesture_output');
-
-			enableWebcamButton = document.getElementById('webcamButton');
-			enableWebcamButton.addEventListener('click', enableCam);
-
-			function enableCam(event: any) {
-				if (!gestureRecognizer) {
-					alert('Please wait for gestureRecognizer to load');
-					return;
-				}
-
-				if (webcamRunning === true) {
-					webcamRunning = false;
-					enableWebcamButton.innerText = 'ENABLE PREDICTIONS';
-				} else {
-					webcamRunning = true;
-					enableWebcamButton.innerText = 'DISABLE PREDICTIONS';
-				}
-
-				const constraints = {
-					video: true
-				};
-
-				navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-					video!.srcObject = stream;
-					video!.addEventListener('loadeddata', predictWebcam);
-				});
-			}
-
-			let lastVideoTime = -1;
-			let results: any = undefined;
-			async function predictWebcam() {
-				const webcamElement = document.getElementById('webcam');
-				if (runningMode === 'IMAGE') {
-					runningMode = 'VIDEO';
-					await gestureRecognizer.setOptions({ runningMode: 'VIDEO' });
-				}
-				let nowInMs = Date.now();
-				if (video.currentTime !== lastVideoTime) {
-					lastVideoTime = video.currentTime;
-					results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-				}
-
-				canvasCtx!.save();
-				canvasCtx!.clearRect(0, 0, canvasElement.width, canvasElement.height);
-				const drawingUtils = new DrawingUtils(canvasCtx as CanvasRenderingContext2D);
-
-				canvasElement.style.height = videoHeight;
-				webcamElement!.style.height = videoHeight;
-				canvasElement.style.width = videoWidth;
-				webcamElement!.style.width = videoWidth;
-
-				if (results.landmarks.length > 0) {
-					if (results.landmarks[0][8] && !alreadyTracked) {
-						startX = results.landmarks[0][8].x;
-						alreadyTracked = true;
-					}
-
-					if (startX - results.landmarks[0][8].x < -0.3) {
-						swipeLeft = 1;
-						alreadyTracked = false;
-					}
-					if (startX - results.landmarks[0][8].x > 0.3) {
-						swipeRight = 1;
-						alreadyTracked = false;
-					}
-
-					for (const landmarks of results.landmarks) {
-						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
-							color: '#00FF00',
-							lineWidth: 5
-						});
-						drawingUtils.drawLandmarks(landmarks, {
-							color: '#FF0000',
-							lineWidth: 2
-						});
-					}
-				}
-				canvasCtx!.restore();
-				if (results.gestures.length > 0) {
-					gestureOutput!.style.display = 'block';
-					gestureOutput!.style.width = videoWidth;
-					const categoryName = results.gestures[0][0].categoryName;
-					gesture = categoryName;
-					const categoryScore = parseFloat(String(results.gestures[0][0].score * 100)).toFixed(2);
-					const handedness = results.handednesses[0][0].displayName;
-					gestureOutput!.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
-				} else {
-					gestureOutput!.style.display = 'none';
-				}
-				if (webcamRunning === true) {
-					window.requestAnimationFrame(predictWebcam);
-				}
-			}
-		};
-
-		cv();
-	});
+	// let userSignedIn = false;
+	const toggleUserSignedIn = () => {
+		sessionStorage.setItem('userSignedIn', `${true}`);
+	};
 </script>
 
-<button id="webcamButton">
-	<span>ENABLE WEBCAM</span>
-</button>
-<video id="webcam" autoplay playsinline class=""></video>
-<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
-<p id="gesture_output" class="output"></p>
-<p>swipe right: {swipeRight}</p>
-<p>swipe left: {swipeLeft}</p>
-
-<style>
-	#webcam {
-		transform: scaleX(-1);
-	}
-</style>
+<div class="h-screen flex items-center justify-center bg-black">
+	<div class="px-6 sm:px-0 max-w-sm">
+		<a
+			href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(SCOPE)}&response_type=${RESPONSE_TYPE}`}
+			class="text-white w-full bg-[#1ED760] hover:bg-[#1ED760]/90 focus:ring-4 focus:outline-none focus:ring-[#1ED760]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center justify-between dark:focus:ring-[#4285F4]/55 mr-2 mb-2"
+			on:click={toggleUserSignedIn}
+		>
+			<svg
+				width="24"
+				height="24"
+				xmlns="http://www.w3.org/2000/svg"
+				fillRule="evenodd"
+				clipRule="evenodd"
+			>
+				<path
+					d="M19.098 10.638c-3.868-2.297-10.248-2.508-13.941-1.387-.593.18-1.22-.155-1.399-.748-.18-.593.154-1.22.748-1.4 4.239-1.287 11.285-1.038 15.738 1.605.533.317.708 1.005.392 1.538-.316.533-1.005.709-1.538.392zm-.126 3.403c-.272.44-.847.578-1.287.308-3.225-1.982-8.142-2.557-11.958-1.399-.494.15-1.017-.129-1.167-.623-.149-.495.13-1.016.624-1.167 4.358-1.322 9.776-.682 13.48 1.595.44.27.578.847.308 1.286zm-1.469 3.267c-.215.354-.676.465-1.028.249-2.818-1.722-6.365-2.111-10.542-1.157-.402.092-.803-.16-.895-.562-.092-.403.159-.804.562-.896 4.571-1.045 8.492-.595 11.655 1.338.353.215.464.676.248 1.028zm-5.503-17.308c-6.627 0-12 5.373-12 12 0 6.628 5.373 12 12 12 6.628 0 12-5.372 12-12 0-6.627-5.372-12-12-12z"
+				/>
+			</svg>
+			spotify air sign in
+		</a>
+	</div>
+</div>
