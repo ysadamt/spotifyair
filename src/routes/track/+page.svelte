@@ -2,14 +2,19 @@
 	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import axios from 'axios';
 
 	let gesture = '';
 	let startX = 0;
 	let alreadyTracked = false;
 	let swipeRight = 0;
 	let swipeLeft = 0;
-	let global_token;
 	let pause = false;
+	let global_token: string | null;
+	let leftCalled = false;
+	let rightCalled = false;
+	let pauseCalled = false;
+	let playCalled = false;
 
 	onMount(() => {
 		const hash = window.location.hash;
@@ -22,9 +27,11 @@
 
 		if (!token && hash) {
 			const token = hash.substring(1).split('&')[0].split('=')[1];
-
-			window.location.hash = '';
 			window.localStorage.setItem('token', token);
+		}
+
+		if (hash) {
+			window.location.hash = '';
 		}
 
 		global_token = token;
@@ -108,18 +115,25 @@
 				webcamElement!.style.width = videoWidth;
 
 				if (results.landmarks.length > 0) {
-					if (results.landmarks[0][8] && !alreadyTracked) {
+					if (results.landmarks[0][8]) {
 						startX = results.landmarks[0][8].x;
-						alreadyTracked = true;
 					}
-
-					if (startX - results.landmarks[0][8].x < -0.3) {
-						swipeLeft = 1;
-						alreadyTracked = false;
-					}
-					if (startX - results.landmarks[0][8].x > 0.3) {
-						swipeRight = 1;
-						alreadyTracked = false;
+					if (startX > 0.6 && gesture === 'Thumb_Up' && !leftCalled) {
+						swipeLeft += 1;
+						handleSwipeLeft();
+						leftCalled = true;
+					} else if (startX < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
+						swipeRight += 1;
+						handleSwipeRight();
+						rightCalled = true;
+					} else if (gesture === 'Open_Palm' && !pauseCalled) {
+						console.log('should be pausing');
+						pauseCalled = true;
+						handlePause();
+					} else if (gesture === 'Victory' && !playCalled) {
+						console.log('should be playing');
+						playCalled = true;
+						handlePlay();
 					}
 
 					if (gesture === 'Open_Palm') {
@@ -139,6 +153,11 @@
 							lineWidth: 2
 						});
 					}
+				} else {
+					leftCalled = false;
+					rightCalled = false;
+					pauseCalled = false;
+					playCalled = false;
 				}
 				canvasCtx!.restore();
 				if (results.gestures.length > 0) {
@@ -160,6 +179,91 @@
 
 		cv();
 	});
+
+	const logout = () => {
+		window.sessionStorage.removeItem('token');
+		goto('/');
+	};
+
+	const handleSwipeRight = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'post',
+				url: 'https://api.spotify.com/v1/me/player/next',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handleSwipeLeft = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'post',
+				url: 'https://api.spotify.com/v1/me/player/previous',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handlePause = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'put',
+				url: 'https://api.spotify.com/v1/me/player/pause',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handlePlay = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'put',
+				url: 'https://api.spotify.com/v1/me/player/play',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
 </script>
 
 <div class="flex flex-row text-white w-full h-full">

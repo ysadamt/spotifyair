@@ -36,6 +36,7 @@
 	"type": "module",
 	"dependencies": {
 		"@mediapipe/tasks-vision": "^0.10.9",
-		"@tabler/icons-svelte": "^2.47.0"
+		"@tabler/icons-svelte": "^2.47.0",
+		"axios": "^1.6.7"
 	}
 }
