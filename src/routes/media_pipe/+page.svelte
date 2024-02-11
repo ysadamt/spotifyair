@@ -10,6 +10,8 @@
 	let swipeRight = 0;
 	let swipeLeft = 0;
 	let global_token: string | null;
+	let leftCalled = false;
+	let rightCalled = false;
 
 	onMount(() => {
 		const hash = window.location.hash;
@@ -111,20 +113,18 @@
 				webcamElement!.style.width = videoWidth;
 
 				if (results.landmarks.length > 0) {
-					if (results.landmarks[0][8] && !alreadyTracked) {
+					if (results.landmarks[0][8]) {
 						startX = results.landmarks[0][8].x;
-						alreadyTracked = true;
 					}
-
-					if (startX - results.landmarks[0][8].x < -0.3) {
-						swipeLeft = 1;
-						alreadyTracked = false;
+					if (startX > 0.6 && gesture === 'Thumb_Up' && !leftCalled) {
+						swipeLeft += 1;
+						handleSwipeLeft();
+						leftCalled = true;
 					}
-					if (startX - results.landmarks[0][8].x > 0.3) {
-						swipeRight = 1;
-						// swipeRight += 1;
+					else if (startX  < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
+						swipeRight += 1
 						handleSwipeRight();
-						alreadyTracked = false;
+						rightCalled = true;
 					}
 
 					for (const landmarks of results.landmarks) {
@@ -137,6 +137,9 @@
 							lineWidth: 2
 						});
 					}
+				} else {
+					leftCalled = false;
+					rightCalled = false;
 				}
 				canvasCtx!.restore();
 				if (results.gestures.length > 0) {
@@ -175,6 +178,26 @@
 			await axios({
 				method: 'post',
 				url: 'https://api.spotify.com/v1/me/player/next',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handleSwipeLeft = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'post',
+				url: 'https://api.spotify.com/v1/me/player/previous',
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
 		} catch (error) {
