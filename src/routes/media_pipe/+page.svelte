@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	let gesture = '';
 	let startX = 0;
@@ -13,7 +14,11 @@
 	onMount(() => {
 		const hash = window.location.hash;
 		const token = window.localStorage.getItem('token');
-		const savedHistory = localStorage.getItem('spotifyHistory');
+		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
+
+		if (!userSignedIn){
+			goto('/');
+		}
 
 		if (!token && hash) {
 			const token = hash.substring(1).split('&')[0].split('=')[1];

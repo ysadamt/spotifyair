@@ -6,9 +6,9 @@
 	const RESPONSE_TYPE = 'token';
 	const SCOPE = 'user-modify-playback-state user-library-read user-read-recently-played';
 
-	let userSignedIn = false;
+	// let userSignedIn = false;
 	const toggleUserSignedIn = () => {
-		userSignedIn = !userSignedIn;
+		sessionStorage.setItem('userSignedIn', `${true}`);
 	};
 </script>
 
