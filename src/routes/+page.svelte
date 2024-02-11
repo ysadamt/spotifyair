@@ -16,9 +16,8 @@
 <main class="flex flex-col items-center justify-center w-full h-full gap-10">
 	<div class="flex flex-col gap-8 items-center justify-center">
 		<h1 class="text-8xl text-white font-bold">Spotify<span class="text-[#1db954]">AIR</span></h1>
-		<p class="text-white text-center max-w-md font-semibold">
-			SpotifyAIR is a web application that allows you to control your Spotify with your hands. It's
-			a remote control for your Spotify account.
+		<p class="text-white text-center max-w-md font-semibold text-lg">
+			Control Spotify with your hands. Play, pause, skip, and like songs without leaving your work.
 		</p>
 	</div>
 	<div class="px-6 sm:px-0 max-w-sm">
