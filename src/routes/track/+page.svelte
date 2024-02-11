@@ -268,6 +268,28 @@
 
 <div class="flex flex-row text-white w-full h-full">
 	<div class="flex flex-col items-center justify-center w-1/2">
+		<table class=" text-black bg-white rounded-lg shadow-xl">
+			<tr>
+				<th align="left" scope="row">Skip Forward</th>
+				<td>Gig Em' to the right👍👉</td>
+			</tr>
+			<tr>
+				<th align="left" scope="row">Go Backward</th>
+				<td>Gig Em' to the left👍👈</td>
+			</tr>
+			<tr>
+				<th align="left" scope="row">Pause Song</th>
+				<td>Open hand✋</td>
+			</tr>
+			<tr>
+				<th align="left" scope="row">Play Song</th>
+				<td>Peace sign✌️</td>
+			</tr>
+			<tr>
+				<th align="left" scope="row" class="pr-6">Add to liked songs</th>
+				<td>Close hand✊</td>
+			</tr>
+		</table>
 		<button
 			id="webcamButton"
 			class="flex text-black w-fit bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
