@@ -2,13 +2,14 @@
 	import { DrawingUtils, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import axios from 'axios';
 
 	let gesture = '';
 	let startX = 0;
 	let alreadyTracked = false;
 	let swipeRight = 0;
 	let swipeLeft = 0;
-	let global_token;
+	let global_token: string | null;
 
 	onMount(() => {
 		const hash = window.location.hash;
@@ -121,6 +122,8 @@
 					}
 					if (startX - results.landmarks[0][8].x > 0.3) {
 						swipeRight = 1;
+						// swipeRight += 1;
+						handleSwipeRight();
 						alreadyTracked = false;
 					}
 
@@ -159,6 +162,27 @@
 	const logout = () => {
 		window.sessionStorage.removeItem('token');
 		goto('/');
+	};
+
+	const handleSwipeRight = async () => {
+		
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'post',
+				url: 'https://api.spotify.com/v1/me/player/next',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
 	};
 </script>
 
