@@ -127,18 +127,18 @@
 					}
 					else if (startX  < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
 						swipeRight += 1
-						// handleSwipeRight();
+						handleSwipeRight();
 						rightCalled = true;
 					}
 					else if(gesture === 'Open_Palm' && !pauseCalled){
 						console.log('should be pausing');
 						pauseCalled = true;
-						// handlePause();
+						handlePause();
 					}
 					else if(gesture === 'Victory' && !playCalled){
 						console.log('should be playing');
 						playCalled = true;
-						// handlePlay();
+						handlePlay();
 					}
 					else if(gesture === 'Closed_Fist' && !closedFistCalled){
 						console.log('should be liking');
