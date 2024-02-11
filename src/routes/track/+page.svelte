@@ -20,9 +20,9 @@
 	onMount(() => {
 		const hash = window.location.hash;
 		let token = window.localStorage.getItem('token');
-		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
+		const userSignedIn = sessionStorage.getItem('userSignedIn');
 
-		if (!userSignedIn) {
+		if (userSignedIn === 'false' || userSignedIn === null) {
 			goto('/');
 		}
 

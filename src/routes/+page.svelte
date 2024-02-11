@@ -1,4 +1,6 @@
 <script>
+	import { onMount } from "svelte";
+
 	// Importing environment variables
 	const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 	const REDIRECT_URI = 'http://localhost:5173/track/';
@@ -11,6 +13,10 @@
 	const toggleUserSignedIn = () => {
 		sessionStorage.setItem('userSignedIn', `${true}`);
 	};
+
+	onMount(() => {
+		sessionStorage.setItem('userSignedIn', `${false}`);
+	});
 </script>
 
 <main class="flex flex-col items-center justify-center w-full h-full gap-10">
