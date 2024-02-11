@@ -15,18 +15,19 @@
 	let rightCalled = false;
 	let pauseCalled = false;
 	let playCalled = false;
+	let closedFistCalled = false;
 
 	onMount(() => {
 		const hash = window.location.hash;
-		const token = window.localStorage.getItem('token');
+		let token = window.localStorage.getItem('token');
 		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
 
 		if (!userSignedIn) {
 			goto('/');
 		}
 
-		if (!token && hash) {
-			const token = hash.substring(1).split('&')[0].split('=')[1];
+		if (token == null && hash) {
+			token = hash.substring(1).split('&')[0].split('=')[1];
 			window.localStorage.setItem('token', token);
 		}
 
@@ -134,6 +135,10 @@
 						console.log('should be playing');
 						playCalled = true;
 						handlePlay();
+					} else if (gesture === 'Closed_Fist' && !closedFistCalled) {
+						console.log('should be liking');
+						closedFistCalled = true;
+						handleLiked();
 					}
 
 					if (gesture === 'Open_Palm') {
@@ -158,6 +163,7 @@
 					rightCalled = false;
 					pauseCalled = false;
 					playCalled = false;
+					closedFistCalled = false;
 				}
 				canvasCtx!.restore();
 				if (results.gestures.length > 0) {
@@ -255,6 +261,50 @@
 			await axios({
 				method: 'put',
 				url: 'https://api.spotify.com/v1/me/player/play',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const get_id_current_song = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			const res = await axios({
+				method: 'get',
+				url: 'https://api.spotify.com/v1/me/player/currently-playing',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+			let id = res.data.item.id;
+			console.log('liked song id: ', id);
+			return id;
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handleLiked = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			const id = await get_id_current_song();
+			await axios({
+				method: 'put',
+				url: `https://api.spotify.com/v1/me/tracks?ids=${id}`,
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
 		} catch (error) {
