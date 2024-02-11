@@ -10,21 +10,22 @@
 	let swipeLeft = 0;
 	let global_token;
 
-
 	onMount(() => {
 		const hash = window.location.hash;
 		const token = window.localStorage.getItem('token');
 		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
 
-		if (!userSignedIn){
+		if (!userSignedIn) {
 			goto('/');
 		}
 
 		if (!token && hash) {
 			const token = hash.substring(1).split('&')[0].split('=')[1];
-
-			window.location.hash = '';
 			window.localStorage.setItem('token', token);
+		}
+
+		if (hash) {
+			window.location.hash = '';
 		}
 
 		global_token = token;
@@ -154,6 +155,11 @@
 
 		cv();
 	});
+
+	const logout = () => {
+		window.sessionStorage.removeItem('token');
+		goto('/');
+	};
 </script>
 
 <button id="webcamButton">
