@@ -12,6 +12,9 @@
 	let global_token: string | null;
 	let leftCalled = false;
 	let rightCalled = false;
+	let pauseCalled = false;
+	let playCalled = false;
+
 
 	onMount(() => {
 		const hash = window.location.hash;
@@ -126,6 +129,16 @@
 						handleSwipeRight();
 						rightCalled = true;
 					}
+					else if(gesture === 'Open_Palm' && !pauseCalled){
+						console.log('should be pausing');
+						pauseCalled = true;
+						handlePause();
+					}
+					else if(gesture === 'Victory' && !playCalled){
+						console.log('should be playing');
+						playCalled = true;
+						handlePlay();
+					}
 
 					for (const landmarks of results.landmarks) {
 						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
@@ -140,6 +153,8 @@
 				} else {
 					leftCalled = false;
 					rightCalled = false;
+					pauseCalled = false;
+					playCalled = false;
 				}
 				canvasCtx!.restore();
 				if (results.gestures.length > 0) {
@@ -207,6 +222,48 @@
 			);
 		}
 	};
+
+	const handlePause = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return;
+		}
+		try {
+			await axios({
+				method: 'put',
+				url: 'https://api.spotify.com/v1/me/player/pause',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		} catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+	};
+
+	const handlePlay = async () => {
+		console.log('global_token', global_token);
+		if (!global_token) {
+			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			return
+		}
+		try {
+			await axios({
+				method: 'put',
+				url: 'https://api.spotify.com/v1/me/player/play',
+				headers: { Authorization: 'Bearer ' + global_token }
+			});
+		}
+		catch (error) {
+			console.log(error);
+			alert(
+				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			);
+		}
+		
+	}
 </script>
 
 <button id="webcamButton">
