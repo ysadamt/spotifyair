@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import axios from 'axios';
+	import { IconLoader2 } from '@tabler/icons-svelte';
 
 	let gesture = '';
 	let startX = 0;
@@ -16,13 +17,15 @@
 	let pauseCalled = false;
 	let playCalled = false;
 	let closedFistCalled = false;
+	$: mediapipeLoading = true;
+	$: currentGesture = '';
 
 	onMount(() => {
 		const hash = window.location.hash;
 		let token = window.localStorage.getItem('token');
-		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
+		const userSignedIn = sessionStorage.getItem('userSignedIn');
 
-		if (!userSignedIn) {
+		if (userSignedIn === 'false' || userSignedIn === null) {
 			goto('/');
 		}
 
@@ -45,6 +48,7 @@
 			const videoHeight = '240px';
 			const videoWidth = '360px';
 
+			mediapipeLoading = true;
 			const vision = await FilesetResolver.forVisionTasks(
 				'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
 			);
@@ -54,11 +58,12 @@
 						'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task'
 				},
 				numHands: 2,
-				runningMode: 'VIDEO',
-				minHandDetectionConfidence: 0.3,
-				minHandPresenceConfidence: 0.3,
-				minTrackingConfidence: 0.3
+				runningMode: 'VIDEO'
+				// minHandDetectionConfidence: 0.3,
+				// minHandPresenceConfidence: 0.3,
+				// minTrackingConfidence: 0.3
 			});
+			mediapipeLoading = false;
 
 			const video = document.getElementById('webcam') as HTMLVideoElement;
 			const canvasElement = document.getElementById('output-canvas') as HTMLCanvasElement;
@@ -76,10 +81,14 @@
 
 				if (webcamRunning === true) {
 					webcamRunning = false;
-					enableWebcamButton.innerText = 'ENABLE PREDICTIONS';
+					enableWebcamButton.innerText = 'Enable Gestures';
+					enableWebcamButton.style.backgroundColor = '#1DB954';
+					window.location.reload();
 				} else {
+					console.log('enabling webcam');
 					webcamRunning = true;
-					enableWebcamButton.innerText = 'DISABLE PREDICTIONS';
+					enableWebcamButton.innerText = 'Disable Gestures';
+					enableWebcamButton.style.backgroundColor = '#ed3737';
 				}
 
 				const constraints = {
@@ -123,22 +132,27 @@
 						swipeLeft += 1;
 						handleSwipeLeft();
 						leftCalled = true;
+						currentGesture = 'Skipped to Previous!';
 					} else if (startX < 0.4 && gesture === 'Thumb_Up' && !rightCalled) {
 						swipeRight += 1;
 						handleSwipeRight();
 						rightCalled = true;
+						currentGesture = 'Skipped to Next!';
 					} else if (gesture === 'Open_Palm' && !pauseCalled) {
 						console.log('should be pausing');
 						pauseCalled = true;
 						handlePause();
+						currentGesture = 'Paused!';
 					} else if (gesture === 'Victory' && !playCalled) {
 						console.log('should be playing');
 						playCalled = true;
 						handlePlay();
+						currentGesture = 'Resumed!';
 					} else if (gesture === 'Closed_Fist' && !closedFistCalled) {
 						console.log('should be liking');
 						closedFistCalled = true;
 						handleLiked();
+						currentGesture = 'Liked!';
 					}
 
 					if (gesture === 'Open_Palm') {
@@ -205,9 +219,9 @@
 			});
 		} catch (error) {
 			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			// alert(
+			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			// );
 		}
 	};
 
@@ -225,9 +239,9 @@
 			});
 		} catch (error) {
 			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			// alert(
+			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			// );
 		}
 	};
 
@@ -245,9 +259,9 @@
 			});
 		} catch (error) {
 			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			// alert(
+			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			// );
 		}
 	};
 
@@ -265,9 +279,9 @@
 			});
 		} catch (error) {
 			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			// alert(
+			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
+			// );
 		}
 	};
 
@@ -316,47 +330,50 @@
 	};
 </script>
 
-<div class="flex flex-row text-white w-full h-full">
-	<div class="flex flex-col items-center justify-center w-1/2">
-		<table class=" text-black bg-white rounded-lg shadow-xl">
-			<tr>
-				<th align="left" scope="row">Skip Forward</th>
-				<td>Gig Em' to the right👍👉</td>
-			</tr>
-			<tr>
-				<th align="left" scope="row">Go Backward</th>
-				<td>Gig Em' to the left👍👈</td>
-			</tr>
-			<tr>
-				<th align="left" scope="row">Pause Song</th>
-				<td>Open hand✋</td>
-			</tr>
-			<tr>
-				<th align="left" scope="row">Play Song</th>
-				<td>Peace sign✌️</td>
-			</tr>
-			<tr>
-				<th align="left" scope="row" class="pr-6">Add to liked songs</th>
-				<td>Close hand✊</td>
-			</tr>
-		</table>
+<div class="flex flex-col items-center justify-start text-white w-full h-full gap-16 pt-32">
+	<div class="flex flex-col items-center justify-center w-1/2 gap-8">
+		<div id="video-container" class="relative bg-[#b3b3b3] w-[360px] h-[280px] rounded-md">
+			<video id="webcam" autoplay playsinline class="absolute top-5"> </video>
+			<canvas class="output-canvas absolute" id="output-canvas" width="360" height="240"> </canvas>
+		</div>
+	</div>
+	<table class=" text-black bg-white rounded-lg shadow-xl">
+		<tr>
+			<th align="left" scope="row">Skip Forward</th>
+			<td>Gig Em' to the right👍👉</td>
+		</tr>
+		<tr>
+			<th align="left" scope="row">Go Backward</th>
+			<td>Gig Em' to the left👍👈</td>
+		</tr>
+		<tr>
+			<th align="left" scope="row">Pause Song</th>
+			<td>Open hand✋</td>
+		</tr>
+		<tr>
+			<th align="left" scope="row">Play Song</th>
+			<td>Peace sign✌️</td>
+		</tr>
+		<tr>
+			<th align="left" scope="row" class="pr-6">Add to liked songs</th>
+			<td>Close hand✊</td>
+		</tr>
+	</table>
+	<div
+		class={`flex flex-col items-center justify-center w-full ${mediapipeLoading ? 'block' : 'hidden'}`}
+	>
+		<IconLoader2 class="animate-spin w-16 h-16" />
+	</div>
+	<div class={`${mediapipeLoading ? 'hidden' : 'flex flex-col items-center justify-center gap-8'}`}>
 		<button
 			id="webcamButton"
 			class="flex text-black w-fit bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
 		>
 			<span>Enable Gestures</span>
 		</button>
-		<p>swipe right: {swipeRight}</p>
-		<p>swipe left: {swipeLeft}</p>
-		<p>pause: {pause}</p>
-		<p id="gesture_output" class="output hidden"></p>
-	</div>
-	<div class="flex flex-col items-center justify-center w-1/2 gap-8">
-		<div id="video-container" class="flex bg-[#b3b3b3] w-[360px] h-[280px] items-center rounded-md">
-			<video id="webcam" autoplay playsinline class="rounded-md"></video>
-		</div>
-		<div id="cv-container" class="flex bg-[#b3b3b3] w-[360px] h-[280px] items-center rounded-md">
-			<canvas class="output-canvas" id="output-canvas" width="360" height="240"></canvas>
+		<p>{currentGesture}</p>
+		<div class="hidden">
+			<p id="gesture_output" class="output"></p>
 		</div>
 	</div>
 </div>
