@@ -9,14 +9,14 @@
 	let swipeRight = 0;
 	let swipeLeft = 0;
 	let global_token;
-
+	let pause = false;
 
 	onMount(() => {
 		const hash = window.location.hash;
 		const token = window.localStorage.getItem('token');
 		const userSignedIn = sessionStorage.getItem('userSignedIn') === 'true';
 
-		if (!userSignedIn){
+		if (!userSignedIn) {
 			goto('/');
 		}
 
@@ -123,6 +123,13 @@
 						alreadyTracked = false;
 					}
 
+					if (gesture === 'Open_Palm') {
+						pause = true;
+					}
+					if (gesture === 'Victory') {
+						pause = false;
+					}
+
 					for (const landmarks of results.landmarks) {
 						drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
 							color: '#00FF00',
@@ -156,14 +163,20 @@
 	});
 </script>
 
-<button id="webcamButton">
-	<span>ENABLE WEBCAM</span>
-</button>
-<video id="webcam" autoplay playsinline class=""></video>
-<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
-<p id="gesture_output" class="output"></p>
-<p>swipe right: {swipeRight}</p>
-<p>swipe left: {swipeLeft}</p>
+<div class="flex flex-col text-white">
+	<button
+		id="webcamButton"
+		class="flex text-black w-full bg-[#1DB954] hover:opacity-90 transition-opacity font-semibold rounded-lg text-base px-5 py-3 text-center items-center justify-center gap-3"
+	>
+		<span>Enable Gestures</span>
+	</button>
+	<video id="webcam" autoplay playsinline class=""></video>
+	<canvas class="output_canvas hidden" id="output_canvas" width="1280" height="720"></canvas>
+	<p id="gesture_output" class="output"></p>
+	<p>swipe right: {swipeRight}</p>
+	<p>swipe left: {swipeLeft}</p>
+	<p>pause: {pause}</p>
+</div>
 
 <style>
 	#webcam {
