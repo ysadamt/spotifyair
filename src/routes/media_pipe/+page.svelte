@@ -7,8 +7,23 @@
 	let alreadyTracked = false;
 	let swipeRight = 0;
 	let swipeLeft = 0;
+	let global_token;
+
 
 	onMount(() => {
+		const hash = window.location.hash;
+		const token = window.localStorage.getItem('token');
+		const savedHistory = localStorage.getItem('spotifyHistory');
+
+		if (!token && hash) {
+			const token = hash.substring(1).split('&')[0].split('=')[1];
+
+			window.location.hash = '';
+			window.localStorage.setItem('token', token);
+		}
+
+		global_token = token;
+
 		const cv = async () => {
 			let gestureRecognizer: GestureRecognizer;
 			let runningMode = 'IMAGE';
