@@ -19,10 +19,13 @@
 	let closedFistCalled = false;
 	$: mediapipeLoading = true;
 	$: currentGesture = '';
+	let hash = '';
 
 	onMount(() => {
-		const hash = window.location.hash;
-		let token = window.localStorage.getItem('token');
+		hash = window.location.hash;
+		// let token = window.localStorage.getItem('token');
+		let token = hash.substring(1).split('&')[0].split('=')[1];
+		window.localStorage.setItem('token', token);
 		const userSignedIn = sessionStorage.getItem('userSignedIn');
 
 		if (userSignedIn === 'false' || userSignedIn === null) {
@@ -200,6 +203,19 @@
 		cv();
 	});
 
+	const refreshMahToken = async () => {
+		const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+		const REDIRECT_URI = 'http://localhost:5173/track/';
+		const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+		const RESPONSE_TYPE = 'token';
+		const SCOPE =
+		'user-modify-playback-state user-library-read user-library-modify user-read-recently-played user-read-currently-playing';
+
+		window.location.href = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(
+			SCOPE
+		)}&response_type=${RESPONSE_TYPE}`;
+	}
+
 	const logout = () => {
 		window.sessionStorage.removeItem('token');
 		goto('/');
@@ -208,7 +224,8 @@
 	const handleSwipeRight = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
-			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			alert('Spotify api failed to provide a token. Please refresh and try again in 15 secs, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -218,17 +235,19 @@
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
 		} catch (error) {
-			console.log(error);
-			// alert(
-			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			// );
+			if(axios.isAxiosError(error) && error.response?.status === 401){
+				console.log(error);
+				console.log('there is a 401 error here, babe');
+				refreshMahToken();
+			}
 		}
 	};
 
 	const handleSwipeLeft = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
-			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			alert('Spotify api failed to provide a token. Please refresh and try again in 15 secs, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -239,9 +258,11 @@
 			});
 		} catch (error) {
 			console.log(error);
-			// alert(
-			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			// );
+				if(axios.isAxiosError(error) && error.response?.status === 401){
+					console.log(error);
+					console.log('there is a 401 error here, babe');
+					refreshMahToken();
+				}
 		}
 	};
 
@@ -249,6 +270,7 @@
 		console.log('global_token', global_token);
 		if (!global_token) {
 			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -258,17 +280,19 @@
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
 		} catch (error) {
-			console.log(error);
-			// alert(
-			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			// );
+			if(axios.isAxiosError(error) && error.response?.status === 401){
+				console.log(error);
+				console.log('there is a 401 error here, babe');
+				refreshMahToken();
+			}
 		}
 	};
 
 	const handlePlay = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
-			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			alert('Spotify api failed to provide a token. Please refresh and try again in 15 secs, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -279,16 +303,19 @@
 			});
 		} catch (error) {
 			console.log(error);
-			// alert(
-			// 	'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			// );
+				if(axios.isAxiosError(error) && error.response?.status === 401){
+					console.log(error);
+					console.log('there is a 401 error here, babe');
+					refreshMahToken();
+				}
 		}
 	};
 
 	const get_id_current_song = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
-			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			alert('Spotify api failed to provide a token. Please refresh and try again in 15 secs, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -301,17 +328,19 @@
 			console.log('liked song id: ', id);
 			return id;
 		} catch (error) {
-			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			if(axios.isAxiosError(error) && error.response?.status === 401){
+				console.log(error);
+				console.log('there is a 401 error here, babe');
+				refreshMahToken();
+			}
 		}
 	};
 
 	const handleLiked = async () => {
 		console.log('global_token', global_token);
 		if (!global_token) {
-			alert('Spotify api failed to provide a token. Please refresh and try again, cutie <3');
+			alert('Spotify api failed to provide a token. Please refresh and try again in 15 secs, cutie <3');
+			refreshMahToken();
 			return;
 		}
 		try {
@@ -322,10 +351,11 @@
 				headers: { Authorization: 'Bearer ' + global_token }
 			});
 		} catch (error) {
-			console.log(error);
-			alert(
-				'The Spotify API is currently having problems with getting your request for some reason. Please try again in 15 seconds, cutie <3'
-			);
+			if(axios.isAxiosError(error) && error.response?.status === 401){
+				console.log(error);
+				console.log('there is a 401 error here, babe');
+				refreshMahToken();
+			}
 		}
 	};
 </script>
